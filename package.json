@@ -1,0 +1,33 @@
+{
+  "name": "dlcln",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "format": "prettier --write api-v1",
+    "lint": "eslint api-v1",
+    "lint:fix": "eslint api-v1 --fix"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.5.5",
+    "@grpc/proto-loader": "^0.6.9",
+    "@prisma/client": "^3.10.0",
+    "axios": "^0.26.0",
+    "bip-schnorr": "^0.6.6",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "eccrypto": "^1.1.6",
+    "express": "~4.16.1",
+    "express-openapi": "^10.1.0",
+    "js-yaml": "^4.1.0",
+    "morgan": "~1.9.1",
+    "redoc-express": "^1.0.0",
+    "swagger-ui-express": "^4.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.4.0",
+    "prettier": "^2.5.1",
+    "prisma": "^3.10.0"
+  }
+}

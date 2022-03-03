@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: 'A getting started API.'
+  version: '3.0.0'
+paths: {}
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    hashX:
+      type: string
+    CreateInvoice:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: string
+          description: >
+            Amount to receive
+
+            Specify the amount to receive in the string of decimal place integer.
+            Unit is satoshi.
+
+            For example, if you want to get 1 BTC, specify the string type 100000000.
+        memo:
+          type: string
+          description: |
+            Memo text. It will be shown in the invoice.
+            maximum length is 4096.
+    Invoice:
+      type: object
+      required:
+        - amount
+        - payment_id
+        - paid
+        - memo
+
+      properties:
+        invoice:
+          type: string
+          description: |
+            String of invoice.
+            It starts with 'lnbc1'(mainnet) or 'lntb1'(testnet) and encoded in bech32.
+            Null when invoice is not needed. Provide flag if you need it.
+        payment_id:
+          type: string
+          description: |
+            Identifier of payment.
+            Used to retrieve payment information.
+            This is not the same as a payment hash, preimage or any other identifier used in Lightning Network.
+        paid:
+          type: boolean
+          description: |
+            Whether the payment is paid.
+        amount:
+          type: string
+          description: |
+            The amount to receive in the string of 10 decimal place integer.
+            Unit is satoshi.
+
+            For example, if you want to get 1 BTC, specify the string type 100000000.
+        memo:
+          type: string
+          description: |
+            Memo of payment.
+            If memo is not specified or empty string, it will be empty string
+    CreateContract:
+      type: object
+      required:
+        - eventName
+        - m
+        - R
+        - P
+        - invoice
+      properties:
+        eventName:
+          type: string
+        m:
+          type: string
+        R:
+          type: string
+        P:
+          type: string
+        invoice:
+          type: string
+    DecryptData:
+      type: object
+      required:
+        - Ex
+        - s
+      properties:
+        Ex:
+          type: string
+        s:
+          type: string
