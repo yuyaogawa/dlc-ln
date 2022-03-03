@@ -9,10 +9,10 @@ const PAYOUT = '200'; // sat
 const EXPIRY = 3600; // Default is 3600(1hour)
 const CLTV_EXPIRY = 18; // Minimun is 18
 const oracle_list = ['ac83a93b89c1b0a1e3ca1cec06f17a7876cf502f9bd5614dfaae8f038d57826b'];
-const axios = require("axios");
+const axios = require('axios');
 let options = {
-  method: "GET",
-  url: "http://127.0.0.1:4000/",
+  method: 'GET',
+  url: 'http://127.0.0.1:4000/',
 };
 
 module.exports = function () {
@@ -42,22 +42,26 @@ module.exports = function () {
     const P = req.body.P;
     const invoice = req.body.invoice;
     const currenttime = new Date().getTime();
-    console.log(currenttime)
+    console.log(currenttime);
 
     // Check if the requested event is valid and still opened
     options.url = 'http://127.0.0.1:4000/events/' + eventName;
     const event = await axios(options);
-    console.log(event)
-    if(!event.data){
+    console.log(event);
+    if (!event.data) {
       const error = {
         status: 'error',
         message: 'This event is invalid.',
       };
       return res.status(200).json(error);
     }
-    1646183535956
-    1646183482
-    if(event.data.nonces != R || !event.data.outcomes.includes(m) || event.data.maturationTimeEpoch * 1000 < currenttime){
+    1646183535956;
+    1646183482;
+    if (
+      event.data.nonces != R ||
+      !event.data.outcomes.includes(m) ||
+      event.data.maturationTimeEpoch * 1000 < currenttime
+    ) {
       const error = {
         status: 'error',
         message: 'This event is invalid.',
@@ -119,6 +123,7 @@ module.exports = function () {
             invoice: invoice,
             holdinvoiceHash: pay_req.payment_hash,
             addIndex: holdinvoice.add_index,
+            eventName: eventName,
             m: m,
             R: R,
             P: P,

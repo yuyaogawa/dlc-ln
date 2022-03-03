@@ -19,6 +19,7 @@ model Contract {
   holdinvoiceHash String
   addIndex   String
   status      String     @default("OPEN")
+  eventName String
   m String
   R String
   P String

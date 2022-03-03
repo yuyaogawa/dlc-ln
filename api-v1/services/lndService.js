@@ -109,7 +109,7 @@ const lndService = {
   },
   cancelInvoice(payment_hash) {
     const request = {
-      payment_hash,
+      payment_hash: Buffer.from(payment_hash, 'hex')
     };
     return new Promise((resolve, reject) => {
       invoices.cancelInvoice(request, (error, response) => {
@@ -122,7 +122,7 @@ const lndService = {
   },
   settleInvoice(preimage) {
     const request = {
-      preimage,
+      preimage: Buffer.from(preimage, 'hex'),
     };
     return new Promise((resolve, reject) => {
       invoices.settleInvoice(request, (error, response) => {
