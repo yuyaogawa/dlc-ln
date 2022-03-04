@@ -18,12 +18,13 @@ const packageDefinition = protoLoader.loadSync(
   ],
   loaderOptions,
 );
+require('dotenv').config();
 const lnrpc = grpc.loadPackageDefinition(packageDefinition).lnrpc;
 const invoicesrpc = grpc.loadPackageDefinition(packageDefinition).invoicesrpc;
 const routerrpc = grpc.loadPackageDefinition(packageDefinition).routerrpc;
-const macaroon = fs.readFileSync('c:/work/hotpotato/admin.macaroon').toString('hex');
+const macaroon = fs.readFileSync(process.env.LND_GRPC_MACAROON).toString('hex');
 process.env.GRPC_SSL_CIPHER_SUITES = 'HIGH+ECDSA';
-const lndCert = fs.readFileSync('c:/work/hotpotato/tls.cert');
+const lndCert = fs.readFileSync(process.env.LND_GRPC_CERT);
 const sslCreds = grpc.credentials.createSsl(lndCert);
 const macaroonCreds = grpc.credentials.createFromMetadataGenerator(function (args, callback) {
   const metadata = new grpc.Metadata();
@@ -31,9 +32,9 @@ const macaroonCreds = grpc.credentials.createFromMetadataGenerator(function (arg
   callback(null, metadata);
 });
 const creds = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
-const lightning = new lnrpc.Lightning('212.24.106.109:10009', creds);
-const invoices = new invoicesrpc.Invoices('212.24.106.109:10009', creds);
-const router = new routerrpc.Router('212.24.106.109:10009', creds);
+const lightning = new lnrpc.Lightning(`${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`, creds);
+const invoices = new invoicesrpc.Invoices(`${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`, creds);
+const router = new routerrpc.Router(`${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`, creds);
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();

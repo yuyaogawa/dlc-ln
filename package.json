@@ -16,6 +16,7 @@
     "bip-schnorr": "^0.6.6",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^16.0.0",
     "eccrypto": "^1.1.6",
     "express": "~4.16.1",
     "express-openapi": "^10.1.0",
