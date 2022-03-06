@@ -7,10 +7,17 @@ const yaml = require('js-yaml');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
+const cors = require('cors');
+require('dotenv').config();
 
 const v1ApiDoc = yaml.load(fs.readFileSync('./api-v1/api-doc.yml', 'utf-8'));
 
 const app = express();
+app.use(cors({
+  origin: process.env.FRONTEND_SERVER,
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
 initialize({
   app,
   apiDoc: v1ApiDoc,
