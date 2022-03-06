@@ -8,7 +8,8 @@ const PREMIUM = '100000'; // msat
 const PAYOUT = '200'; // sat
 const EXPIRY = 3600; // Default is 3600(1hour)
 const CLTV_EXPIRY = 18; // Minimun is 18
-const oracle_list = ['ac83a93b89c1b0a1e3ca1cec06f17a7876cf502f9bd5614dfaae8f038d57826b'];
+//require('dotenv').config();
+const oracle_list = ['e7887373eb29184aa104e20ff5342d0019791ad656896ec573f5e9da96b001c6'];
 const axios = require('axios');
 let options = {
   method: 'GET',
@@ -55,8 +56,6 @@ module.exports = function () {
       };
       return res.status(200).json(error);
     }
-    1646183535956;
-    1646183482;
     if (
       event.data.nonces != R ||
       !event.data.outcomes.includes(m) ||
