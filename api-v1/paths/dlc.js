@@ -1,19 +1,21 @@
 const dlcService = require('../services/dlcService');
 const lndService = require('../services/lndService');
 const crypto = require('crypto');
+const axios = require('axios');
+require('dotenv').config();
 const Buffer = require('safe-buffer').Buffer;
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+
 const PREMIUM = '100000'; // msat
-const PAYOUT = '200'; // sat
+const PAYOUT = '200000'; // msat
 const EXPIRY = 3600; // Default is 3600(1hour)
 const CLTV_EXPIRY = 18; // Minimun is 18
-require('dotenv').config();
+const ORACLE_SERVER = process.env.ORACLE_SERVER;
 const oracle_list = [process.env.ORACLE_PUBKEY];
-const axios = require('axios');
 let options = {
   method: 'GET',
-  url: 'http://127.0.0.1:4000/',
+  url: ORACLE_SERVER,
 };
 
 module.exports = function () {
@@ -32,7 +34,7 @@ module.exports = function () {
         status: 'error',
         message: 'This hashX is not found.',
       };
-      return res.status(400).json(error);
+      return res.status(200).json(error);
     }
     res.status(200).json(contract);
   }
@@ -46,7 +48,7 @@ module.exports = function () {
     console.log(currenttime);
 
     // Check if the requested event is valid and still opened
-    options.url = 'http://127.0.0.1:4000/events/' + eventName;
+    options.url = ORACLE_SERVER + '/events/' + eventName;
     const event = await axios(options);
     console.log(event);
     if (!event.data) {
@@ -76,13 +78,23 @@ module.exports = function () {
       return res.status(200).json(error);
     }
 
-    const invoice_req = await lndService.decodePayReq(invoice);
+    let invoice_req;
+    try {
+      invoice_req = await lndService.decodePayReq(invoice);
+    } catch (err) {
+      const error = {
+        status: 'error',
+        message: 'Invoice is invalid.',
+      };
+      return res.status(400).json(error);
+    }
+
     if (invoice_req.num_msat !== PREMIUM) {
       const error = {
         status: 'error',
         message: 'Amount is invalid.',
       };
-      return res.status(400).json(error);
+      return res.status(200).json(error);
     }
     const payment_hash = await dlcService.genHash(crypto.randomBytes(32));
     const route = await lndService.prePayProbe(
@@ -96,7 +108,7 @@ module.exports = function () {
         status: 'error',
         message: 'The destination is not reachable.',
       };
-      return res.status(400).json(error);
+      return res.status(200).json(error);
     }
 
     const sGx = await dlcService.messageCommitment(m, R, P);
@@ -107,7 +119,7 @@ module.exports = function () {
 
     // expiry and cltv_expiry must be longer than Orcale expiration
     const holdinvoice = await lndService.addHoldInvoice(
-      'contract memo',
+      'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),
       PAYOUT,
       EXPIRY,

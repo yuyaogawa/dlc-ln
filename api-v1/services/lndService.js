@@ -32,9 +32,18 @@ const macaroonCreds = grpc.credentials.createFromMetadataGenerator(function (arg
   callback(null, metadata);
 });
 const creds = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds);
-const lightning = new lnrpc.Lightning(`${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`, creds);
-const invoices = new invoicesrpc.Invoices(`${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`, creds);
-const router = new routerrpc.Router(`${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`, creds);
+const lightning = new lnrpc.Lightning(
+  `${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`,
+  creds,
+);
+const invoices = new invoicesrpc.Invoices(
+  `${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`,
+  creds,
+);
+const router = new routerrpc.Router(
+  `${process.env.LND_GRPC_ENDPOINT}:${process.env.LND_GRPC_PORT}`,
+  creds,
+);
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -80,11 +89,11 @@ const lndService = {
   },
   addHoldInvoice(memo, hash, value, expiry, cltv_expiry) {
     const request = {
-      memo,
-      hash,
-      value,
-      expiry,
-      cltv_expiry,
+      memo: memo,
+      hash: hash,
+      value_msat: value,
+      expiry: expiry,
+      cltv_expiry: cltv_expiry,
     };
     return new Promise((resolve, reject) => {
       invoices.addHoldInvoice(request, (error, response) => {
@@ -110,7 +119,7 @@ const lndService = {
   },
   cancelInvoice(payment_hash) {
     const request = {
-      payment_hash: Buffer.from(payment_hash, 'hex')
+      payment_hash: Buffer.from(payment_hash, 'hex'),
     };
     return new Promise((resolve, reject) => {
       invoices.cancelInvoice(request, (error, response) => {
@@ -192,7 +201,7 @@ const lndService = {
     });
     call.on('end', function () {
       // The server has closed the stream.
-      console.log('The server has closed the stream.');
+      console.log('The server has closed the stream. [sendPaymentV2]');
     });
   },
   // Customize modules comes below
@@ -204,7 +213,7 @@ const lndService = {
     console.log('SubscribeSingleInvoice');
     call.on('data', async function (response) {
       // A response was received from the server.
-      console.log(response.state);
+      console.log(response);
       if (response.state == 'SETTLED') {
         const contract = await prisma.contract.findFirst({
           where: { addIndex: response.add_index },
@@ -235,6 +244,14 @@ const lndService = {
           },
         });
         console.log(contract);
+        try {
+          const update = await prisma.contract.update({
+            where: { id: contract.id },
+            data: { status: 'ACCEPTED' },
+          });
+        } catch (err) {
+          console.log(err);
+        }
         const invoice = contract.invoice;
         const pay_req = await lndService.decodePayReq(invoice);
 
@@ -257,24 +274,36 @@ const lndService = {
               Buffer.from(pay_req.payment_hash, 'hex'),
               route,
             );
+            // Handle if the status is FAILED
             console.log(payment.status);
             console.log('Fin');
-            // Update database
-            await prisma.contract.update({
-              where: { id: contract.id },
-              data: { paid: true },
-            });
+            //
+            if (payment.status === 'SUCCEEDED') {
+              // Update database
+              await prisma.contract.update({
+                where: { id: contract.id },
+                data: { paid: true },
+              });
+            } else {
+              // In case payment failed, holdinvoice needs to be canceled.
+              console.log('Payment failed, holdinvoice needs to be canceled.[1]');
+            }
           } catch (err) {
             console.log(err);
-            // Something went wrong so that holdinvoice needs to be cancel.
+            console.log('Payment failed, holdinvoice needs to be canceled.[2]');
+            // Something went wrong so that holdinvoice needs to be canceled.
             // Or just wait until holdinvoice is expired then cancel it.
           }
         }
       }
     });
+    call.on('status', function (status) {
+      // The current status of the stream.
+      //console.log(status)
+    });
     call.on('end', async function () {
       // The server has closed the stream.
-      console.log('The server has closed the stream.');
+      console.log('The server has closed the stream. [subscribeSingleInvoice]');
     });
   },
   async prePayProbe(pub_key, amount, final_cltv_delta, payment_hash) {
