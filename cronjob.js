@@ -65,7 +65,7 @@ async function main() {
       try {
         const settled = await lndService.settleInvoice(x);
         console.log(settled);
-        const update = await prisma.oracle.update({
+        const update = await prisma.contract.update({
           where: { id: event.id },
           data: { status: 'SETTLED' },
         });

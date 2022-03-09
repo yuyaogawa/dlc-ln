@@ -9,7 +9,9 @@ const prisma = new PrismaClient();
 
 const PREMIUM = '100000'; // msat
 const PAYOUT = '200000'; // msat
-const EXPIRY = 3600; // Default is 3600(1hour)
+//const EXPIRY = 3600; // Default is 3600(1hour)
+const DIFFTIME = 60; // seconds 
+let EXPIRY;
 const CLTV_EXPIRY = 144; // Minimun is 18
 const ORACLE_SERVER = process.env.ORACLE_SERVER;
 const oracle_list = [process.env.ORACLE_PUBKEY];
@@ -118,6 +120,15 @@ module.exports = function () {
     const data = Buffer.concat([Ex.iv, Ex.ephemPublicKey, Ex.ciphertext, Ex.mac]).toString('hex');
 
     // expiry and cltv_expiry must be longer than Orcale expiration
+    EXPIRY = (event.data.maturationTimeEpoch - currenttime / 1000) - DIFFTIME
+    console.log(EXPIRY);
+    if(EXPIRY < 0){
+      const error = {
+        status: 'error',
+        message: 'Expiration time has passed',
+      };
+      return res.status(200).json(error);
+    }
     const holdinvoice = await lndService.addHoldInvoice(
       'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),

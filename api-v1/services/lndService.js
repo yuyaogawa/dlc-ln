@@ -241,6 +241,7 @@ const lndService = {
           select: {
             id: true,
             invoice: true,
+            hashX: true,
           },
         });
         console.log(contract);
@@ -287,6 +288,8 @@ const lndService = {
             } else {
               // In case payment failed, holdinvoice needs to be canceled.
               console.log('Payment failed, holdinvoice needs to be canceled.[1]');
+              const cannceled = await lndService.cancelInvoice(contract.hashX);
+              console.log(cannceled);
             }
           } catch (err) {
             console.log(err);
