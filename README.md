@@ -1,6 +1,8 @@
 # DLC-LN
 DLC-LN is a server to provide option style DLC.
 
+![OP_DLC](./docs/OP_DLC_Diagram.png)
+
 ### Install
 ```
 git clone {this repo}
