@@ -205,7 +205,7 @@ const lndService = {
     });
   },
   // Customize modules comes below
-  subscribeSingleInvoice(r_hash) {
+  subscribeSingleInvoice(r_hash, res) {
     const request = {
       r_hash,
     };
@@ -213,7 +213,7 @@ const lndService = {
     console.log('SubscribeSingleInvoice');
     call.on('data', async function (response) {
       // A response was received from the server.
-      console.log(response);
+      console.log(response.state);
       if (response.state == 'SETTLED') {
         const contract = await prisma.contract.findFirst({
           where: { addIndex: response.add_index },
@@ -269,40 +269,44 @@ const lndService = {
             total_amt_msat: pay_req.num_msat,
           };
           route.hops[route.hops.length - 1].mpp_record = mpp_record;
-          console.log(route.hops);
+          //console.log(route.hops);
           try {
             const payment = await lndService.sendToRouteV2(
               Buffer.from(pay_req.payment_hash, 'hex'),
               route,
             );
-            // Handle if the status is FAILED
             console.log(payment.status);
             console.log('Fin');
-            //
             if (payment.status === 'SUCCEEDED') {
               // Update database
               await prisma.contract.update({
                 where: { id: contract.id },
                 data: { paid: true },
               });
+              // Notify to the user that position is opened!
+              console.log('Position is opened');
+              res.write(`data: ${JSON.stringify({status: "ok", message: "Position is opened"})}\n\n`);
+              res.end(); // terminates SSE session
             } else {
               // In case payment failed, holdinvoice needs to be canceled.
               console.log('Payment failed, holdinvoice needs to be canceled.[1]');
               const cannceled = await lndService.cancelInvoice(contract.hashX);
               console.log(cannceled);
+              res.write(`data: ${JSON.stringify({status: "ok", message: "Payment failed[1]"})}\n\n`);
+              res.end();
             }
           } catch (err) {
-            console.log(err);
-            console.log('Payment failed, holdinvoice needs to be canceled.[2]');
             // Something went wrong so that holdinvoice needs to be canceled.
             // Or just wait until holdinvoice is expired then cancel it.
+            console.log(err);
+            console.log('Payment failed, holdinvoice needs to be canceled.[2]');
+            const cannceled = await lndService.cancelInvoice(contract.hashX);
+            console.log(cannceled);
+            res.write(`data: ${JSON.stringify({status: "ok", message: "Payment failed[2]"})}\n\n`);
+            res.end();
           }
         }
       }
-    });
-    call.on('status', function (status) {
-      // The current status of the stream.
-      //console.log(status)
     });
     call.on('end', async function () {
       // The server has closed the stream.
