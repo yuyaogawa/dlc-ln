@@ -285,14 +285,18 @@ const lndService = {
               });
               // Notify to the user that position is opened!
               console.log('Position is opened');
-              res.write(`data: ${JSON.stringify({status: "ok", message: "Position is opened"})}\n\n`);
+              res.write(
+                `data: ${JSON.stringify({ status: 'ok', message: 'Position is opened' })}\n\n`,
+              );
               res.end(); // terminates SSE session
             } else {
               // In case payment failed, holdinvoice needs to be canceled.
               console.log('Payment failed, holdinvoice needs to be canceled.[1]');
               const cannceled = await lndService.cancelInvoice(contract.hashX);
               console.log(cannceled);
-              res.write(`data: ${JSON.stringify({status: "ok", message: "Payment failed[1]"})}\n\n`);
+              res.write(
+                `data: ${JSON.stringify({ status: 'ok', message: 'Payment failed[1]' })}\n\n`,
+              );
               res.end();
             }
           } catch (err) {
@@ -302,7 +306,9 @@ const lndService = {
             console.log('Payment failed, holdinvoice needs to be canceled.[2]');
             const cannceled = await lndService.cancelInvoice(contract.hashX);
             console.log(cannceled);
-            res.write(`data: ${JSON.stringify({status: "ok", message: "Payment failed[2]"})}\n\n`);
+            res.write(
+              `data: ${JSON.stringify({ status: 'ok', message: 'Payment failed[2]' })}\n\n`,
+            );
             res.end();
           }
         }

@@ -8,7 +8,7 @@ module.exports = function () {
   async function GET(req, res, next) {
     const headers = {
       'Content-Type': 'text/event-stream',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Cache-Control': 'no-cache',
     };
     res.writeHead(200, headers);
@@ -24,12 +24,10 @@ module.exports = function () {
     };
     clients.push(newClient);
 
-
     // SubscribeSingleInvoice and streaming update
     const payment_hash = req.query.payment_hash;
     console.log('payment_hash: ' + req.query);
     lndService.subscribeSingleInvoice(Buffer.from(payment_hash, 'hex'), res);
-
 
     req.on('close', () => {
       console.log(`${clientId} Connection closed`);
