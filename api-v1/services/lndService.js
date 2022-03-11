@@ -148,7 +148,7 @@ const lndService = {
       pub_key,
       amt,
       final_cltv_delta,
-      use_mission_control: false,
+      use_mission_control: true,
     };
     return new Promise((resolve, reject) => {
       lightning.queryRoutes(request, (error, response) => {
