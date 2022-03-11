@@ -7,8 +7,8 @@ const Buffer = require('safe-buffer').Buffer;
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const PREMIUM = '100000'; // msat
-const PAYOUT = '200000'; // msat
+const PREMIUM = process.env.PREMIUM
+const PAYOUT = process.env.PAYOUT
 //const EXPIRY = 3600; // Default is 3600(1hour)
 const DIFFTIME = 60; // seconds
 let EXPIRY;
