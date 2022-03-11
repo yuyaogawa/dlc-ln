@@ -41,10 +41,14 @@ async function main() {
     const signature = res.data
     console.log(signature);
 
+    // Skep this event if a signature is not yet provided.
+    // This event is probably a new valid one.
     if(res.data.status == 'error'){
       console.log(res.data.status)
-      //return 1
+      console.log("continue for: " + event)
+      continue;
     }
+
     let x;
     const data = event.encX
     const Ex = {
