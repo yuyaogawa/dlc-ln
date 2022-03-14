@@ -36,12 +36,19 @@ module.exports = function () {
   }
   // NOTE: We could also use a YAML string here.
   GET.apiDoc = {
-    summary: '',
-    operationId: '',
-    parameters: [],
+    summary: 'Subscribe payment to holdinvoice',
+    operationId: 'subscribePayment',
+    parameters: [
+      {
+        in: 'query',
+        name: 'payment_hash',
+        required: true,
+        schema: { $ref: '#/components/schemas/hashX' },
+      },
+    ],
     responses: {
       200: {
-        description: '',
+        description: 'Return 200 for subscription',
       },
     },
   };

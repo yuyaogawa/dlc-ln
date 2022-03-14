@@ -13,6 +13,13 @@ components:
           type: string
         message:
           type: string
+    Preimage:
+      type: object
+      properties:
+        preimage:
+          type: string
+          description: >
+            preimage decrypted by Oracle's signature
     hashX:
       type: string
     CreateInvoice:
@@ -89,6 +96,37 @@ components:
         P:
           type: string
         invoice:
+          type: string
+    ContractData:
+      type: object
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+        invoice:
+          type: string
+        paid:
+          type: string
+        holdinvoiceHash:
+          type: string
+        addIndex:
+          type: string
+        status:
+          type: string
+        eventName:
+          type: string
+        m:
+          type: string
+        R:
+          type: string
+        P:
+          type: string
+        sG:
+          type: string
+        hashX:
+          type: string
+        encX:
           type: string
     DecryptData:
       type: object

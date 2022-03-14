@@ -203,8 +203,8 @@ module.exports = function () {
   }
   // NOTE: We could also use a YAML string here.
   GET.apiDoc = {
-    summary: 'Get data',
-    operationId: 'GetData',
+    summary: 'Find contract data by hash x',
+    operationId: 'findContractData',
     parameters: [
       {
         in: 'query',
@@ -215,13 +215,18 @@ module.exports = function () {
     ],
     responses: {
       200: {
-        description: 'Return data',
+        description: 'Return contract data',
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/ContractData' },
+          },
+        },
       },
     },
   };
   POST.apiDoc = {
     summary: 'Create a contract',
-    operationId: 'CreateContract',
+    operationId: 'createContract',
     requestBody: {
       required: true,
       content: {
@@ -232,13 +237,18 @@ module.exports = function () {
     },
     responses: {
       200: {
-        description: 'Encrypted preimage and hodlinvoice',
+        description: 'Return encrypted preimage and hodlinvoice',
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/ContractData' },
+          },
+        },
       },
     },
   };
   PUT.apiDoc = {
-    summary: 'Decrypt data',
-    operationId: 'DecryptData',
+    summary: 'Decrypt encX',
+    operationId: 'decryptEncryptedX',
     requestBody: {
       required: true,
       content: {
@@ -249,7 +259,12 @@ module.exports = function () {
     },
     responses: {
       200: {
-        description: 'Decrypted data',
+        description: 'Return decrypted preimage',
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/Preimage' },
+          },
+        },
       },
     },
   };
