@@ -38,7 +38,7 @@ async function main() {
     console.log(event.eventName);
     options.url = 'http://127.0.0.1:4000/signatures/' + event.eventName;
     const res = await axios(options);
-    const signature = res.data
+    const signature = res.data.signatures
     console.log(signature);
 
     // Skep this event if a signature is not yet provided.
@@ -58,7 +58,7 @@ async function main() {
       mac: Buffer.from(data.slice(data.length - 64), 'hex'),
     };
     try {
-      x = await dlcService.decrypto(Ex, signature);
+      x = await dlcService.decrypto(Ex, signature[0]);
     } catch (err) {
       console.log(err);
       //return 1;
