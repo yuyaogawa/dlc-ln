@@ -66,10 +66,10 @@ describe('/dlc', () => {
     const res = await request(app)
       .post('/dlc')
       .send(req);
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(404);
     expect(res.body).toEqual({
       status: 'error',
-      message: 'This event is not found.',
+      message: expect.anything(),
     });
   });
 

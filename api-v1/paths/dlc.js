@@ -58,7 +58,7 @@ module.exports = function () {
         status: 'error',
         message: err,
       };
-      return res.status(200).json(error);
+      return res.status(404).json(error);
     }
     console.log(event)
     if (event.data.status === 'error') {
