@@ -47,16 +47,24 @@ module.exports = function () {
     const P = req.body.P;
     const invoice = req.body.invoice;
     const currenttime = new Date().getTime();
-    console.log(currenttime);
+    let event;
 
     // Check if the requested event is valid and still opened
     options.url = ORACLE_SERVER + '/events/' + eventName;
-    const event = await axios(options);
-    console.log(event);
-    if (!event.data) {
+    try {
+      event = await axios(options);
+    } catch (err){
       const error = {
         status: 'error',
-        message: 'This event is invalid.',
+        message: err,
+      };
+      return res.status(200).json(error);
+    }
+    console.log(event)
+    if (event.data.status === 'error') {
+      const error = {
+        status: 'error',
+        message: 'This event is not found.',
       };
       return res.status(200).json(error);
     }
