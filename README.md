@@ -3,6 +3,9 @@ DLC-LN is a server to provide option style DLC.
 
 ![OP_DLC](./docs/OP_DLC_Diagram.png)
 
+### System Overview
+![OP_DLC](./docs/SystemDiagram.png)
+
 ### Install
 ```
 git clone {this repo}
@@ -25,6 +28,12 @@ prisma migrate dev --name added_job_title
 ### Run
 ```
 npm start
+```
+
+### Cronjob
+Cronjob should be set up to execute the following command so that each Position is settled/canceled every X mins. 
+```
+node cronjob.js
 ```
 
 ### Example
