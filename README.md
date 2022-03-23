@@ -6,6 +6,10 @@ DLC-LN is a server to provide option style DLC.
 ### System Overview
 ![OP_DLC](./docs/SystemDiagram.png)
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) Version 14 or higher
+
 ### Install
 ```
 git clone {this repo}
@@ -35,10 +39,14 @@ Cronjob should be set up to execute the following command so that each Position 
 ```
 node cronjob.js
 ```
+To set crontab
+```
+1-56/5 * * * * cd /home/ubuntu/dlc-ln && /usr/bin/node cronjob.js h >> /home/ubuntu/logs/dlc-ln.log 2>&1
+```
 
 ### Example
 ```
-curl -s -X GET http://localhost:4000/events
+curl -s -X GET http://localhost:3000/dlc
 ```
 
 ```
