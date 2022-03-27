@@ -128,13 +128,15 @@ components:
           type: string
         encX:
           type: string
+          description: >
+            concat([encX.iv, encX.ephemPublicKey, encX.ciphertext, encX.mac])
     DecryptData:
       type: object
       required:
-        - Ex
+        - encX
         - s
       properties:
-        Ex:
+        encX:
           type: string
         s:
           type: string

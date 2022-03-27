@@ -27,20 +27,20 @@ const dlcService = {
     // FIXME sGx is x-only-pub-key?
     const pubkey = Buffer.from('03' + sGx, 'hex');
     // Encrypting the message for A.
-    const Ex = await eccrypto.encrypt(pubkey, Buffer.from(x)).then(function (encrypted) {
+    const encX = await eccrypto.encrypt(pubkey, Buffer.from(x)).then(function (encrypted) {
       //console.log(encrypted)
       return encrypted;
     });
-    console.log(Ex);
-    return Ex;
+    console.log(encX);
+    return encX;
   },
-  async decrypto(Ex, s) {
-    //const encrypted = Buffer.from(Ex, 'hex');
+  async decrypto(encX, s) {
+    //const encrypted = Buffer.from(encX, 'hex');
     const privkey = Buffer.from(s, 'hex').slice(32, 64);
     console.log(privkey);
     // A decrypting the message.
     const x = await eccrypto
-      .decrypt(privkey, Ex)
+      .decrypt(privkey, encX)
       .then(function (plaintext) {
         return plaintext;
       })
@@ -66,7 +66,7 @@ const dlcService = {
     } else {
       console.log('The signature is valid');
     }
-    return Ex;
+    return encX;
   },
 };
 

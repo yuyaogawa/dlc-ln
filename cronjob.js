@@ -51,14 +51,14 @@ async function main() {
 
     let x;
     const data = event.encX
-    const Ex = {
+    const encX = {
       iv: Buffer.from(data.substring(0, 32), 'hex'),
       ephemPublicKey: Buffer.from(data.substring(32, 162), 'hex'),
       ciphertext: Buffer.from(data.substring(162, data.length - 64), 'hex'),
       mac: Buffer.from(data.slice(data.length - 64), 'hex'),
     };
     try {
-      x = await dlcService.decrypto(Ex, signature[0]);
+      x = await dlcService.decrypto(encX, signature[0]);
     } catch (err) {
       console.log(err);
       //return 1;
