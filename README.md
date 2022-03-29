@@ -6,6 +6,10 @@ DLC-LN is a server to provide option style DLC.
 ### System Overview
 ![OP_DLC](./docs/SystemDiagram.png)
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) Version 14 or higher
+
 ### Install
 ```
 git clone {this repo}
@@ -35,10 +39,14 @@ Cronjob should be set up to execute the following command so that each Position 
 ```
 node cronjob.js
 ```
+To set crontab
+```
+1-56/5 * * * * cd /home/ubuntu/dlc-ln && /usr/bin/node cronjob.js h >> /home/ubuntu/logs/dlc-ln.log 2>&1
+```
 
 ### Example
 ```
-curl -s -X GET http://localhost:4000/events
+curl -s -X GET http://localhost:3000/dlc
 ```
 
 ```
@@ -50,5 +58,5 @@ curl -s -X POST http://localhost:3000/dlc \
 ```
 curl -s -X PUT http://localhost:3000/dlc \
 -H "Content-Type: application/json" \
--d '{"Ex":"addcb2a5912e51a423919ab3e7bc24c20410a821bb44ddef2a682c393dcde3f99412d40cfa3d11f359d3f400b1f3e16cfba8dd8434200d4ea207d50a6b2542cf0a610326563e229d27148c6f91f00d4f903345c714a54ae57e3cb64819ac416cce72918e0f2751e647d2acdc53e4455804185bbed45acd0630257727df591f2b8651bdc7f354e456396eaf298f8d88edbfdd6078acbb8e658486bae4e9a234ff9a", "s":"26f3c853eeb03e7a89ad2da3d86de1822372b01cda607d18295b40a94267f7b733d7acd0c3d7bbbb39f438d26abdd04084e73c359da159144c5bac79e20b5626"}'
+-d '{"encX":"addcb2a5912e51a423919ab3e7bc24c20410a821bb44ddef2a682c393dcde3f99412d40cfa3d11f359d3f400b1f3e16cfba8dd8434200d4ea207d50a6b2542cf0a610326563e229d27148c6f91f00d4f903345c714a54ae57e3cb64819ac416cce72918e0f2751e647d2acdc53e4455804185bbed45acd0630257727df591f2b8651bdc7f354e456396eaf298f8d88edbfdd6078acbb8e658486bae4e9a234ff9a", "s":"26f3c853eeb03e7a89ad2da3d86de1822372b01cda607d18295b40a94267f7b733d7acd0c3d7bbbb39f438d26abdd04084e73c359da159144c5bac79e20b5626"}'
 ```

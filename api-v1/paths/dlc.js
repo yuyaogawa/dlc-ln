@@ -92,6 +92,7 @@ module.exports = function () {
     try {
       invoice_req = await lndService.decodePayReq(invoice);
     } catch (err) {
+      console.log(err);
       const error = {
         status: 'error',
         message: 'Invoice is invalid.',
@@ -107,25 +108,34 @@ module.exports = function () {
       return res.status(200).json(error);
     }
     const payment_hash = await dlcService.genHash(crypto.randomBytes(32));
-    const route = await lndService.prePayProbe(
-      invoice_req.destination,
-      invoice_req.num_satoshis,
-      invoice_req.cltv_expiry,
-      Buffer.from(payment_hash, 'hex'),
-    );
-    if (route === undefined) {
+    try{
+      const route = await lndService.prePayProbe(
+        invoice_req.destination,
+        invoice_req.num_satoshis,
+        invoice_req.cltv_expiry,
+        Buffer.from(payment_hash, 'hex'),
+      );
+      if (route === undefined) {
+        const error = {
+          status: 'error',
+          message: 'The destination is not reachable.',
+        };
+        return res.status(200).json(error);
+      }
+    }catch (err) {
       const error = {
         status: 'error',
-        message: 'The destination is not reachable.',
+        message: err,
       };
       return res.status(200).json(error);
     }
 
+
     const sGx = await dlcService.messageCommitment(m, R, P);
     const x = crypto.randomBytes(32);
     const hashX = await dlcService.genHash(x);
-    const Ex = await dlcService.encrypto(x, sGx);
-    const data = Buffer.concat([Ex.iv, Ex.ephemPublicKey, Ex.ciphertext, Ex.mac]).toString('hex');
+    const encX = await dlcService.encrypto(x, sGx);
+    const data = Buffer.concat([encX.iv, encX.ephemPublicKey, encX.ciphertext, encX.mac]).toString('hex');
 
     // expiry and cltv_expiry must be longer than Orcale expiration
     EXPIRY = event.data.maturationTimeEpoch - currenttime / 1000 - DIFFTIME;
@@ -186,16 +196,16 @@ module.exports = function () {
       sG: sGx,
       x: 'THIS_VALUE_IS_SAFEGUARDED',
       hashX,
-      Ex: data,
+      encX: data,
       invoice: holdinvoice.payment_request,
     };
 
     res.status(200).json(result);
   }
   async function PUT(req, res, next) {
-    const data = req.body.Ex;
+    const data = req.body.encX;
     const s = req.body.s;
-    const Ex = {
+    const encX = {
       iv: Buffer.from(data.substring(0, 32), 'hex'),
       ephemPublicKey: Buffer.from(data.substring(32, 162), 'hex'),
       ciphertext: Buffer.from(data.substring(162, data.length - 64), 'hex'),
@@ -203,7 +213,7 @@ module.exports = function () {
     };
 
     try {
-      const x = await dlcService.decrypto(Ex, s);
+      const x = await dlcService.decrypto(encX, s);
       res.status(200).json(x.toString('hex'));
     } catch (err) {
       res.status(400).json(err);
