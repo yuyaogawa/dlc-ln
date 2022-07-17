@@ -7,8 +7,10 @@ const Buffer = require('safe-buffer').Buffer;
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const PREMIUM = process.env.PREMIUM
-const PAYOUT = process.env.PAYOUT
+const MIN_PREMIUM = process.env.MIN_PREMIUM;
+const MAX_PREMIUM = process.env.MAX_PREMIUM;
+const PAYOUT_RATE = process.env.PAYOUT_RATE;
+//let PAYOUT = process.env.PAYOUT;
 //const EXPIRY = 3600; // Default is 3600(1hour)
 const DIFFTIME = 60; // seconds
 let EXPIRY;
@@ -99,14 +101,15 @@ module.exports = function () {
       };
       return res.status(400).json(error);
     }
-
-    if (invoice_req.num_msat !== PREMIUM) {
+    console.log(invoice_req.num_msat)
+    if (invoice_req.num_msat < parseInt(MIN_PREMIUM) || invoice_req.num_msat > parseInt(MAX_PREMIUM)) {
       const error = {
         status: 'error',
         message: 'Amount is invalid.',
       };
       return res.status(200).json(error);
     }
+    PAYOUT = invoice_req.num_msat * PAYOUT_RATE;
     const payment_hash = await dlcService.genHash(crypto.randomBytes(32));
     try{
       const route = await lndService.prePayProbe(
@@ -125,7 +128,7 @@ module.exports = function () {
     }catch (err) {
       const error = {
         status: 'error',
-        message: err,
+        message: err.details,
       };
       return res.status(200).json(error);
     }
