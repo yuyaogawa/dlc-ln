@@ -159,9 +159,10 @@ module.exports = function () {
     );
     const pay_req = await lndService.decodePayReq(holdinvoice.payment_request);
 
+    let contract
     if (holdinvoice !== undefined) {
       try {
-        const contract = await prisma.contract.create({
+        contract = await prisma.contract.create({
           data: {
             invoice: invoice,
             holdinvoiceHash: pay_req.payment_hash,
@@ -192,6 +193,7 @@ module.exports = function () {
     }
 
     const result = {
+      id: contract.id,
       eventName: eventName,
       m: m,
       R: R,
