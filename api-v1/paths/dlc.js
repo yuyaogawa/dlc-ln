@@ -179,7 +179,7 @@ module.exports = function () {
     const holdinvoice = await lndService.addHoldInvoice(
       'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),
-      payout,
+      payout * 1000,
       EXPIRY,
       CLTV_EXPIRY,
     );
