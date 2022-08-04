@@ -14,11 +14,15 @@ model Contract {
   id          Int        @id @default(autoincrement())
   createdAt   DateTime   @default(now())
   invoice     String
+  premium     String?
+  payout      String?
   //rHash       String
   paid        Boolean    @default(false)
   holdinvoiceHash String
   addIndex   String
   status      String     @default("OPEN")
+  strikePrice String?
+  closedPrice String?
   eventName String
   m String
   R String

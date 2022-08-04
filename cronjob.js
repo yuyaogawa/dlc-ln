@@ -7,6 +7,7 @@ let options = {
 };
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const ORACLE_SERVER = process.env.ORACLE_SERVER;
 
 async function main() {
   const events = await prisma.contract.findMany({
@@ -36,10 +37,15 @@ async function main() {
 
   for (const event of events) {
     console.log(event.eventName);
-    options.url = 'http://127.0.0.1:4000/signatures/' + event.eventName;
+    options.url = ORACLE_SERVER + '/signatures/' + event.eventName;
     const res = await axios(options);
     const signature = res.data.signatures
     console.log(signature);
+
+    options.url = ORACLE_SERVER + '/prices/' + event.eventName;
+    const res2 = await axios(options);
+    //console.log(res2.data[0])
+    const price = res2.data[0]
 
     // Skep this event if a signature is not yet provided.
     // This event is probably a new valid one.
@@ -71,7 +77,7 @@ async function main() {
         console.log(settled);
         const update = await prisma.contract.update({
           where: { id: event.id },
-          data: { status: 'SETTLED' },
+          data: { status: 'SETTLED', closedPrice: price.closedPrice },
         });
       } catch (err) {
         console.log(err);
@@ -81,10 +87,11 @@ async function main() {
         try {
           const update = await prisma.contract.update({
             where: { id: event.id },
-            data: { status: 'CANCELED' },
+            data: { status: 'CANCELED', closedPrice: price.closedPrice },
           });
         } catch (err) {
           console.log(err);
+          console.log('#################')
         }
       }
     } else {
@@ -95,7 +102,7 @@ async function main() {
       try {
         const update = await prisma.contract.update({
           where: { id: event.id },
-          data: { status: 'CANCELED' },
+          data: { status: 'CANCELED', closedPrice: price.closedPrice },
         });
       } catch (err) {
         console.log(err);
