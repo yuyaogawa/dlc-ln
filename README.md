@@ -25,7 +25,7 @@ cp .env.example .env
 ```
 npx prisma migrate reset
 npx prisma migrate dev --name init
-prisma migrate dev --name added_job_title
+npx prisma migrate dev --name added_job_title
 ```
 
 

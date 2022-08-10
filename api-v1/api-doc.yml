@@ -114,6 +114,14 @@ components:
           type: string
         status:
           type: string
+        premium:
+          type: string
+        payout:
+          type: string
+        strikePrice:
+          type: string
+        closedPrice:
+          type: string
         eventName:
           type: string
         m:

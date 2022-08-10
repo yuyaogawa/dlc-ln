@@ -7,8 +7,10 @@ const Buffer = require('safe-buffer').Buffer;
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const PREMIUM = process.env.PREMIUM
-const PAYOUT = process.env.PAYOUT
+const MIN_PREMIUM = process.env.MIN_PREMIUM;
+const MAX_PREMIUM = process.env.MAX_PREMIUM;
+const PAYOUT_RATE = process.env.PAYOUT_RATE;
+//let PAYOUT = process.env.PAYOUT;
 //const EXPIRY = 3600; // Default is 3600(1hour)
 const DIFFTIME = 60; // seconds
 let EXPIRY;
@@ -46,6 +48,9 @@ module.exports = function () {
     const R = req.body.R;
     const P = req.body.P;
     const invoice = req.body.invoice;
+    let strikePrice = 0;
+    let premium = 0;
+    let payout = 0;
     const currenttime = new Date().getTime();
     let event;
 
@@ -60,7 +65,7 @@ module.exports = function () {
       };
       return res.status(404).json(error);
     }
-    console.log(event)
+    //console.log(event)
     if (event.data.status === 'error') {
       const error = {
         status: 'error',
@@ -79,6 +84,28 @@ module.exports = function () {
       };
       return res.status(200).json(error);
     }
+
+    // Get price for this event
+    let price;
+    options.url = ORACLE_SERVER + '/prices/' + eventName;
+    try {
+      price = await axios(options);
+    } catch (err){
+      const error = {
+        status: 'error',
+        message: err,
+      };
+      return res.status(404).json(error);
+    }
+    console.log(price.data)
+    if (price.data.status === 'error') {
+      const error = {
+        status: 'error',
+        message: 'This event is not found.',
+      };
+      return res.status(200).json(error);
+    }
+    strikePrice = price.data[0].strikePrice;
 
     if (!oracle_list.includes(P)) {
       const error = {
@@ -99,14 +126,16 @@ module.exports = function () {
       };
       return res.status(400).json(error);
     }
-
-    if (invoice_req.num_msat !== PREMIUM) {
+    console.log(invoice_req.num_msat)
+    if (invoice_req.num_msat < parseInt(MIN_PREMIUM) || invoice_req.num_msat > parseInt(MAX_PREMIUM)) {
       const error = {
         status: 'error',
         message: 'Amount is invalid.',
       };
       return res.status(200).json(error);
     }
+    premium = invoice_req.num_msat / 1000;
+    payout = invoice_req.num_msat * PAYOUT_RATE / 1000;
     const payment_hash = await dlcService.genHash(crypto.randomBytes(32));
     try{
       const route = await lndService.prePayProbe(
@@ -114,6 +143,7 @@ module.exports = function () {
         invoice_req.num_satoshis,
         invoice_req.cltv_expiry,
         Buffer.from(payment_hash, 'hex'),
+        invoice_req.route_hints,
       );
       if (route === undefined) {
         const error = {
@@ -125,7 +155,7 @@ module.exports = function () {
     }catch (err) {
       const error = {
         status: 'error',
-        message: err,
+        message: err.details,
       };
       return res.status(200).json(error);
     }
@@ -150,19 +180,23 @@ module.exports = function () {
     const holdinvoice = await lndService.addHoldInvoice(
       'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),
-      PAYOUT,
+      payout * 1000,
       EXPIRY,
       CLTV_EXPIRY,
     );
     const pay_req = await lndService.decodePayReq(holdinvoice.payment_request);
 
+    let contract
     if (holdinvoice !== undefined) {
       try {
-        const contract = await prisma.contract.create({
+        contract = await prisma.contract.create({
           data: {
             invoice: invoice,
+            premium: premium.toString(),
+            payout: payout.toString(),
             holdinvoiceHash: pay_req.payment_hash,
             addIndex: holdinvoice.add_index,
+            strikePrice: strikePrice,
             eventName: eventName,
             m: m,
             R: R,
@@ -189,6 +223,7 @@ module.exports = function () {
     }
 
     const result = {
+      id: contract.id,
       eventName: eventName,
       m: m,
       R: R,
@@ -198,6 +233,10 @@ module.exports = function () {
       hashX,
       encX: data,
       invoice: holdinvoice.payment_request,
+      premium: premium,
+      payout: payout,
+      strikePrice: strikePrice,
+      closedPrice: null,
     };
 
     res.status(200).json(result);
