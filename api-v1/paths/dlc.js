@@ -143,6 +143,7 @@ module.exports = function () {
         invoice_req.num_satoshis,
         invoice_req.cltv_expiry,
         Buffer.from(payment_hash, 'hex'),
+        invoice_req.route_hints,
       );
       if (route === undefined) {
         const error = {

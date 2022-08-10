@@ -143,12 +143,13 @@ const lndService = {
       });
     });
   },
-  queryRoutes(pub_key, amt, final_cltv_delta) {
+  queryRoutes(pub_key, amt, final_cltv_delta, route_hints) {
     const request = {
       pub_key,
       amt,
       final_cltv_delta,
       use_mission_control: true,
+      route_hints,
     };
     return new Promise((resolve, reject) => {
       lightning.queryRoutes(request, (error, response) => {
@@ -262,6 +263,7 @@ const lndService = {
           pay_req.num_satoshis,
           pay_req.cltv_expiry,
           Buffer.from(payment_hash, 'hex'),
+          pay_req.route_hints,
         );
         if (route !== undefined) {
           const mpp_record = {
@@ -269,6 +271,7 @@ const lndService = {
             total_amt_msat: pay_req.num_msat,
           };
           route.hops[route.hops.length - 1].mpp_record = mpp_record;
+          route.hops[route.hops.length - 1].tlv_payload = true;
           //console.log(route.hops);
           try {
             const payment = await lndService.sendToRouteV2(
@@ -276,6 +279,7 @@ const lndService = {
               route,
             );
             console.log(payment.status);
+            //console.log(payment.failure);
             console.log('Fin');
             if (payment.status === 'SUCCEEDED') {
               // Update database
@@ -319,12 +323,13 @@ const lndService = {
       console.log('The server has closed the stream. [subscribeSingleInvoice]');
     });
   },
-  async prePayProbe(pub_key, amount, final_cltv_delta, payment_hash) {
+  async prePayProbe(pub_key, amount, final_cltv_delta, payment_hash, route_hints) {
     const MAX_ROUTES_TO_REQUEST = 10;
     const all_routes = [];
     let num_requested_routes = 0;
     while (true) {
-      let routes = await lndService.queryRoutes(pub_key, amount, final_cltv_delta);
+      //console.log(route_hints);
+      let routes = await lndService.queryRoutes(pub_key, amount, final_cltv_delta, route_hints);
       routes = routes.routes;
       //console.log(routes[0])
       if (routes == undefined) {
