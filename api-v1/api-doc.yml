@@ -148,3 +148,10 @@ components:
           type: string
         s:
           type: string
+    StatsData:
+      type: object
+      required:
+        - dailyVolume
+      properties:
+        dailyVolume:
+          type: string
