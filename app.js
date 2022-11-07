@@ -55,4 +55,35 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+const ORACLE_SERVER = process.env.ORACLE_SERVER;
+const BTCUSD_TICKER = process.env.BTCUSD_TICKER;
+const PREMIUM_RATE = process.env.PREMIUM_RATE;
+const PAYOUT = process.env.PAYOUT;
+const axios = require('axios');
+const priceService = require('./api-v1/services/priceService');
+let currentPrice;
+let strikePrice;
+setInterval(async () => { 
+  try {
+    currentPrice = await axios(BTCUSD_TICKER);
+  } catch (err){
+    console.log(err);
+  }
+  try {
+    strikePrice = await axios(ORACLE_SERVER + '/prices/latest');
+  } catch (err){
+    console.log(err);
+  }
+  const currenttime = new Date().getTime();
+  const createdAt = Date.parse(strikePrice.data[0].createdAt) + 300 * 1000; // 5 mins
+  let expiry = createdAt / 1000 - currenttime / 1000;
+  const secondsRemaining = expiry * 0.00000003170979198;
+  const {c, p} = priceService.bs(currentPrice.data.last, strikePrice.data[0].strikePrice, secondsRemaining);
+  app.locals.secondsRemaining = secondsRemaining;
+  app.locals.currentPrice = currentPrice.data.last;
+  app.locals.strikePrice = strikePrice.data[0].strikePrice;
+  app.locals.c = (c * PAYOUT / 1000 * PREMIUM_RATE).toFixed(0);
+  app.locals.p = (p * PAYOUT / 1000 * PREMIUM_RATE).toFixed(0);
+}, 3000);
+
 module.exports = app;
