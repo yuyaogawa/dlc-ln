@@ -206,6 +206,9 @@ const lndService = {
     });
   },
   // Customize modules comes below
+  // FIXME: subscribeSingleInvoice is currently called from client side.
+  // But this should be called from server side. Or current logic is ok
+  // if it validates the expiry.
   subscribeSingleInvoice(r_hash, res) {
     const request = {
       r_hash,
@@ -246,6 +249,7 @@ const lndService = {
           },
         });
         console.log(contract);
+        // TODO: Check if this payment is accepted before the expiry.
         try {
           const update = await prisma.contract.update({
             where: { id: contract.id },

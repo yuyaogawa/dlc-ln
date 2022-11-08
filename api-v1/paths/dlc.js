@@ -1,5 +1,6 @@
 const dlcService = require('../services/dlcService');
 const lndService = require('../services/lndService');
+const priceService = require('../services/priceService');
 const crypto = require('crypto');
 const axios = require('axios');
 require('dotenv').config();
@@ -9,9 +10,10 @@ const prisma = new PrismaClient();
 
 const MIN_PREMIUM = process.env.MIN_PREMIUM;
 const MAX_PREMIUM = process.env.MAX_PREMIUM;
-const PAYOUT_RATE = process.env.PAYOUT_RATE;
-//let PAYOUT = process.env.PAYOUT;
-//const EXPIRY = 3600; // Default is 3600(1hour)
+const PAYOUT = process.env.PAYOUT;
+// Hold invoice has to be paid as soon as possible.
+// Expiry is set to 30 seconds at the moment.
+const HOLD_INVOICE_EXPIRY = 30; //seconds
 const DIFFTIME = 60; // seconds
 let EXPIRY;
 const CLTV_EXPIRY = 144; // Minimun is 18
@@ -58,7 +60,7 @@ module.exports = function () {
     options.url = ORACLE_SERVER + '/events/' + eventName;
     try {
       event = await axios(options);
-    } catch (err){
+    } catch (err) {
       const error = {
         status: 'error',
         message: err,
@@ -90,14 +92,14 @@ module.exports = function () {
     options.url = ORACLE_SERVER + '/prices/' + eventName;
     try {
       price = await axios(options);
-    } catch (err){
+    } catch (err) {
       const error = {
         status: 'error',
         message: err,
       };
       return res.status(404).json(error);
     }
-    console.log(price.data)
+    console.log(price.data);
     if (price.data.status === 'error') {
       const error = {
         status: 'error',
@@ -126,8 +128,11 @@ module.exports = function () {
       };
       return res.status(400).json(error);
     }
-    console.log(invoice_req.num_msat)
-    if (invoice_req.num_msat < parseInt(MIN_PREMIUM) || invoice_req.num_msat > parseInt(MAX_PREMIUM)) {
+    console.log(invoice_req.num_msat);
+    if (
+      invoice_req.num_msat < parseInt(MIN_PREMIUM) ||
+      invoice_req.num_msat > parseInt(MAX_PREMIUM)
+    ) {
       const error = {
         status: 'error',
         message: 'Amount is invalid.',
@@ -135,9 +140,9 @@ module.exports = function () {
       return res.status(200).json(error);
     }
     premium = invoice_req.num_msat / 1000;
-    payout = invoice_req.num_msat * PAYOUT_RATE / 1000;
+    payout = PAYOUT / 1000;
     const payment_hash = await dlcService.genHash(crypto.randomBytes(32));
-    try{
+    try {
       const route = await lndService.prePayProbe(
         invoice_req.destination,
         invoice_req.num_satoshis,
@@ -152,7 +157,7 @@ module.exports = function () {
         };
         return res.status(200).json(error);
       }
-    }catch (err) {
+    } catch (err) {
       const error = {
         status: 'error',
         message: err.details,
@@ -177,16 +182,28 @@ module.exports = function () {
       };
       return res.status(200).json(error);
     }
+
+    // Pricing check
+    const c = req.app.locals.c;
+    const p = req.app.locals.p;
+    console.log(`${m} ${premium}: c ${c}, p ${p}`);
+    if ((m == 'Yes' && premium > c) || (m == 'No' && premium > p)) {
+      const error = {
+        status: 'error',
+        message: 'Invalid premium amount',
+      };
+      return res.status(200).json(error);
+    }
     const holdinvoice = await lndService.addHoldInvoice(
       'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),
       payout * 1000,
-      EXPIRY,
+      HOLD_INVOICE_EXPIRY,
       CLTV_EXPIRY,
     );
     const pay_req = await lndService.decodePayReq(holdinvoice.payment_request);
 
-    let contract
+    let contract;
     if (holdinvoice !== undefined) {
       try {
         contract = await prisma.contract.create({

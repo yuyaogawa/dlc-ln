@@ -1,6 +1,7 @@
 let clients = [];
-let facts = [];
-const lndService = require('../services/lndService');
+const facts = [];
+
+const PAYOUT = process.env.PAYOUT;
 module.exports = function () {
   const operations = {
     GET,
@@ -25,28 +26,24 @@ module.exports = function () {
     };
     clients.push(newClient);
 
-    // SubscribeSingleInvoice and streaming update
-    const payment_hash = req.query.payment_hash;
-    console.log('payment_hash: ' + req.query);
-    lndService.subscribeSingleInvoice(Buffer.from(payment_hash, 'hex'), res);
+    // Streaming update
+    const refreshIntervalId = setInterval(function () {
+      const c = req.app.locals.c;
+      const p = req.app.locals.p;
+      res.write(`data: ${JSON.stringify({ status: 'ok', message: { c, p } })}\n\n`);
+    }, 3000);
 
     req.on('close', () => {
       console.log(`${clientId} Connection closed`);
+      clearInterval(refreshIntervalId);
       clients = clients.filter((client) => client.id !== clientId);
     });
   }
   // NOTE: We could also use a YAML string here.
   GET.apiDoc = {
-    summary: 'Subscribe payment to holdinvoice',
-    operationId: 'subscribePayment',
-    parameters: [
-      {
-        in: 'query',
-        name: 'payment_hash',
-        required: true,
-        schema: { $ref: '#/components/schemas/hashX' },
-      },
-    ],
+    summary: 'Subscribe quotes',
+    operationId: '',
+    parameters: [],
     responses: {
       200: {
         description: 'Return 200 for subscription',
