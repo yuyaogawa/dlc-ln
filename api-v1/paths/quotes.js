@@ -30,7 +30,9 @@ module.exports = function () {
     const refreshIntervalId = setInterval(function () {
       const c = req.app.locals.c;
       const p = req.app.locals.p;
-      res.write(`data: ${JSON.stringify({ status: 'ok', message: { c, p } })}\n\n`);
+      const currentPrice = req.app.locals.currentPrice;
+      const strikePrice = req.app.locals.strikePrice;
+      res.write(`data: ${JSON.stringify({ status: 'ok', message: { c, p, currentPrice, strikePrice } })}\n\n`);
     }, 3000);
 
     req.on('close', () => {
