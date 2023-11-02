@@ -61,27 +61,31 @@ const PREMIUM_RATE = process.env.PREMIUM_RATE;
 const PAYOUT = process.env.PAYOUT;
 const axios = require('axios');
 const priceService = require('./api-v1/services/priceService');
-let currentPrice;
-let strikePrice;
+let currentPrice = 0;
+let strikePrice = 0;
+let createdAt = 0;
 setInterval(async () => { 
   try {
-    currentPrice = await axios(BTCUSD_TICKER);
+    const res = await axios(BTCUSD_TICKER);
+    currentPrice = res.data.last;
   } catch (err){
     console.log(err);
   }
   try {
-    strikePrice = await axios(ORACLE_SERVER + '/prices/latest');
+    const res = await axios(ORACLE_SERVER + '/prices/latest');
+    strikePrice = res.data[0].strikePrice;
+    createdAt = res.data[0].createdAt;
   } catch (err){
     console.log(err);
   }
   const currenttime = new Date().getTime();
-  const createdAt = Date.parse(strikePrice.data[0].createdAt) + 300 * 1000; // 5 mins
-  let expiry = createdAt / 1000 - currenttime / 1000;
-  const secondsRemaining = expiry * 0.00000003170979198;
-  const {c, p} = priceService.bs(currentPrice.data.last, strikePrice.data[0].strikePrice, secondsRemaining);
+  const expiryAt = Date.parse(createdAt) + 300 * 1000; // 5 mins
+  const expiration = expiryAt / 1000 - currenttime / 1000;
+  const secondsRemaining = expiration * 0.00000003170979198;
+  const {c, p} = priceService.bs(currentPrice, strikePrice, secondsRemaining);
   app.locals.secondsRemaining = secondsRemaining;
-  app.locals.currentPrice = currentPrice.data.last;
-  app.locals.strikePrice = strikePrice.data[0].strikePrice;
+  app.locals.currentPrice = currentPrice;
+  app.locals.strikePrice = strikePrice;
   app.locals.c = (c * PAYOUT / 1000 * PREMIUM_RATE).toFixed(0);
   app.locals.p = (p * PAYOUT / 1000 * PREMIUM_RATE).toFixed(0);
 }, 3000);

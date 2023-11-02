@@ -312,12 +312,17 @@ const lndService = {
             // Or just wait until holdinvoice is expired then cancel it.
             console.log(err);
             console.log('Payment failed, holdinvoice needs to be canceled.[2]');
+            // FIXME
+            // Error occurs when paying same invoice.
+            // cancelInvoice() should not be called for this error
+            /*
             const cannceled = await lndService.cancelInvoice(contract.hashX);
             console.log(cannceled);
             res.write(
               `data: ${JSON.stringify({ status: 'ok', message: 'Payment failed[2]' })}\n\n`,
             );
             res.end();
+            */
           }
         }
       }
