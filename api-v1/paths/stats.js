@@ -16,8 +16,9 @@ module.exports = function () {
     let now = new Date();
     let yesterday = new Date(now.getTime());
     yesterday.setDate(now.getDate() - 2);
-    const stats = await prisma.$queryRaw`SELECT SUM(CAST(premium AS INTEGER)) AS dailyVolume FROM Contract WHERE createdAt >= ${yesterday} ;`
-    console.log("dailyVolume: " + stats[0].dailyVolume);
+    const stats =
+      await prisma.$queryRaw`SELECT SUM(CAST(premium AS INTEGER)) AS dailyVolume FROM Contract WHERE createdAt >= ${yesterday} ;`;
+    console.log('dailyVolume: ' + stats[0].dailyVolume);
     if (!stats) {
       const error = {
         status: 'error',
