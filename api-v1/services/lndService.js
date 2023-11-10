@@ -218,7 +218,7 @@ const lndService = {
     console.log('SubscribeSingleInvoice');
     call.on('data', async function (response) {
       // A response was received from the server.
-      console.log('hodl invoice status' + response.state);
+      console.log('hodl invoice status: ' + response.state);
       if (response.state == 'CANCELED') {
         console.log(response.r_hash.toString('hex'))
       }

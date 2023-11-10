@@ -14,6 +14,7 @@ model Contract {
   id          Int        @id @default(autoincrement())
   createdAt   DateTime   @default(now())
   invoice     String
+  lot         String
   premium     String?
   payout      String?
   //rHash       String

@@ -50,6 +50,7 @@ module.exports = function () {
     const R = req.body.R;
     const P = req.body.P;
     const invoice = req.body.invoice;
+    const lot = req.body.lot;
     let strikePrice = 0;
     let premium = 0;
     let payout = 0;
@@ -130,8 +131,8 @@ module.exports = function () {
     }
     console.log(invoice_req.num_msat);
     if (
-      invoice_req.num_msat < parseInt(MIN_PREMIUM) ||
-      invoice_req.num_msat > parseInt(MAX_PREMIUM)
+      invoice_req.num_msat < parseInt(MIN_PREMIUM * lot) ||
+      invoice_req.num_msat > parseInt(MAX_PREMIUM * lot)
     ) {
       const error = {
         status: 'error',
@@ -140,7 +141,7 @@ module.exports = function () {
       return res.status(200).json(error);
     }
     premium = invoice_req.num_msat / 1000;
-    payout = PAYOUT / 1000;
+    payout = lot * PAYOUT / 1000;
     const payment_hash = await dlcService.genHash(crypto.randomBytes(32));
     try {
       const route = await lndService.prePayProbe(
@@ -197,7 +198,7 @@ module.exports = function () {
     const holdinvoice = await lndService.addHoldInvoice(
       'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),
-      payout * 1000,
+      lot * payout * 1000,
       HOLD_INVOICE_EXPIRY,
       CLTV_EXPIRY,
     );
@@ -209,6 +210,7 @@ module.exports = function () {
         contract = await prisma.contract.create({
           data: {
             invoice: invoice,
+            lot: lot.toString(),
             premium: premium.toString(),
             payout: payout.toString(),
             holdinvoiceHash: pay_req.payment_hash,
@@ -250,6 +252,7 @@ module.exports = function () {
       hashX,
       encX: data,
       invoice: holdinvoice.payment_request,
+      lot: lot,
       premium: premium,
       payout: payout,
       strikePrice: strikePrice,
