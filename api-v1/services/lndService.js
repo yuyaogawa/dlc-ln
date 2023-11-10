@@ -213,11 +213,15 @@ const lndService = {
     const request = {
       r_hash,
     };
+    console.log('subscribing ' + r_hash.toString('hex'));
     const call = invoices.subscribeSingleInvoice(request);
     console.log('SubscribeSingleInvoice');
     call.on('data', async function (response) {
       // A response was received from the server.
-      console.log(response.state);
+      console.log('hodl invoice status' + response.state);
+      if (response.state == 'CANCELED') {
+        console.log(response.r_hash.toString('hex'))
+      }
       if (response.state == 'SETTLED') {
         const contract = await prisma.contract.findFirst({
           where: { addIndex: response.add_index },
@@ -282,7 +286,7 @@ const lndService = {
               Buffer.from(pay_req.payment_hash, 'hex'),
               route,
             );
-            console.log(payment.status);
+            console.log('payment status' + payment.status);
             //console.log(payment.failure);
             console.log('Fin');
             if (payment.status === 'SUCCEEDED') {

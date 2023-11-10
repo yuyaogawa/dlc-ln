@@ -27,7 +27,7 @@ module.exports = function () {
 
     // SubscribeSingleInvoice and streaming update
     const payment_hash = req.query.payment_hash;
-    console.log('payment_hash: ' + req.query);
+    console.log('payment_hash: ' + payment_hash);
     lndService.subscribeSingleInvoice(Buffer.from(payment_hash, 'hex'), res);
 
     req.on('close', () => {

@@ -1,9 +1,13 @@
+const volatility = process.env.volatility;
+const interestrate = process.env.interestrate;
+const riskfreerate = process.env.riskfreerate;
+
 const priceService = {
   bs(S, K, T) {
     // https://quant.stackexchange.com/questions/40918/black-scholes-for-binary-option
     //const S = 21384;
     //const K = 21344;
-    const v = 0.1;
+    const v = 1.2;
     const r = 0.0;
     const rd = 0.5;
     //const T = 0.000003;
