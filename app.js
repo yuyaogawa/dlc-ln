@@ -79,7 +79,7 @@ setInterval(async () => {
     console.log(err);
   }
   const currenttime = new Date().getTime();
-  const expiryAt = Date.parse(createdAt) + 300 * 1000; // 5 mins
+  const expiryAt = Date.parse(createdAt) + 600 * 1000; // 10 mins
   const expiration = expiryAt / 1000 - currenttime / 1000;
   const secondsRemaining = expiration * 0.00000003170979198;
   const {c, p} = priceService.bs(currentPrice, strikePrice, secondsRemaining);

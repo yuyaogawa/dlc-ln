@@ -13,6 +13,7 @@ const MAX_PREMIUM = process.env.MAX_PREMIUM;
 const PAYOUT = process.env.PAYOUT;
 // Hold invoice has to be paid as soon as possible.
 // Expiry is set to 30 seconds at the moment.
+// If expiry time has passed before accepted, the invoice will be automatically canceled.
 const HOLD_INVOICE_EXPIRY = 30; //seconds
 const DIFFTIME = 60; // seconds
 let EXPIRY;
