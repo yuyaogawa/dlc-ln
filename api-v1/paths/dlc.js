@@ -57,6 +57,7 @@ module.exports = function () {
     const currenttime = new Date().getTime();
     let event;
 
+    console.log('lot: ' + lot);
     // Check if the requested event is valid and still opened
     options.url = ORACLE_SERVER + '/events/' + eventName;
     try {
@@ -187,8 +188,8 @@ module.exports = function () {
     // Pricing check
     const c = req.app.locals.c;
     const p = req.app.locals.p;
-    console.log(`${m} ${premium}: c ${c}, p ${p}`);
-    if ((m == 'Yes' && premium > c) || (m == 'No' && premium > p)) {
+    console.log(`${m} ${premium / lot}: c ${c}, p ${p}`);
+    if ((m == 'Yes' && premium / lot > c) || (m == 'No' && premium / lot > p)) {
       const error = {
         status: 'error',
         message: 'Invalid premium amount',
