@@ -83,7 +83,7 @@ async function main() {
         console.log(err);
         console.log('invoice already canceled')
         const cannceled = await lndService.cancelInvoice(event.hashX);
-        console.log(cannceled +" by cronjob1");
+        console.log('payment of hash ' + event.hashX + ' canceled by cronjob1');
         try {
           const update = await prisma.contract.update({
             where: { id: event.id },
