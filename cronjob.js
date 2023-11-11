@@ -74,7 +74,7 @@ async function main() {
       console.log('settleInvoice')
       try {
         const settled = await lndService.settleInvoice(x);
-        console.log(settled);
+        console.log(settled +" by cronjob1");
         const update = await prisma.contract.update({
           where: { id: event.id },
           data: { status: 'SETTLED', closedPrice: price.closedPrice },
@@ -83,7 +83,7 @@ async function main() {
         console.log(err);
         console.log('invoice already canceled')
         const cannceled = await lndService.cancelInvoice(event.hashX);
-        console.log(cannceled);
+        console.log(cannceled +" by cronjob1");
         try {
           const update = await prisma.contract.update({
             where: { id: event.id },
@@ -95,7 +95,7 @@ async function main() {
         }
       }
     } else {
-      console.log('cancelInvoice')
+      console.log('cancelInvoice' +" by cronjob2")
       const cannceled = await lndService.cancelInvoice(event.hashX);
       console.log(cannceled);
       console.log('*********************')
