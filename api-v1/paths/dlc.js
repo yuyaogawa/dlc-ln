@@ -15,7 +15,7 @@ const PAYOUT = process.env.PAYOUT;
 // Expiry is set to 30 seconds at the moment.
 // If expiry time has passed before accepted, the invoice will be automatically canceled.
 const HOLD_INVOICE_EXPIRY = 30; //seconds
-const DIFFTIME = 60; // seconds
+const DIFFTIME = 120; // deadline of entry in seconds
 let EXPIRY;
 const CLTV_EXPIRY = 144; // Minimun is 18
 const ORACLE_SERVER = process.env.ORACLE_SERVER;
@@ -200,7 +200,7 @@ module.exports = function () {
     const holdinvoice = await lndService.addHoldInvoice(
       'eventName: ' + eventName,
       Buffer.from(hashX, 'hex'),
-      lot * payout * 1000,
+      payout * 1000,
       HOLD_INVOICE_EXPIRY,
       CLTV_EXPIRY,
     );
